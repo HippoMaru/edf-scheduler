@@ -41,6 +41,8 @@ class TaskList:
         self.tail = node
 
     def remove_task(self, task):
+        print(task)
+        print(self.head.task)
         if task == self.head.task:
             self.cut_head()
             return

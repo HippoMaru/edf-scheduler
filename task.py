@@ -25,10 +25,12 @@ class Task:
         return self.time_passed >= self.time_needed
 
     def get_next(self):
-        return Task(self.first_arr_time, self.time_needed, self.first_deadline, self.periodical, self.n + 1)
+        return Task(self.first_arr_time, self.time_needed, self.first_deadline, self.resources, self.periodical, self.n + 1)
 
     def get_needed_resource(self):
         resource = None
+        if not self.resources:
+            return resource
         for el in self.resources:
             if el[1] > self.time_passed:
                 break

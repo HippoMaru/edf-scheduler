@@ -5,6 +5,8 @@ from task_list import *
 class Scheduler:
     def __init__(self, task_list=TaskList(), switch_time=0, resource_touch_time=0, cpus=1):
         self.switch_time = switch_time
+        self.tasks_done = 0
+        self.total_switch_time = 0
         self.resource_touch_time = resource_touch_time
         self.current_time = 0
         self.task_list = task_list
@@ -17,7 +19,7 @@ class Scheduler:
         while not self.current_tasks[-1]:
             if not cur:
                 break
-            if cur.task.get_needed_resource() and cur.task.get_needed_resource() in self.current_resources:
+            if not cur.task.get_needed_resource() or cur.task.get_needed_resource() in self.current_resources:
                 cur = cur.next
                 continue
             self.current_tasks[i] = cur.task
@@ -42,6 +44,7 @@ class Scheduler:
             top_tasks.append(cur.task)
             top_resources.append(cur.task.get_needed_resource())
             cur = cur.next
+        print(top_tasks)
         for i in range(self.cpus):
             current_cpu_task = self.current_tasks[i]
             if not current_cpu_task or current_cpu_task not in top_tasks:
@@ -56,6 +59,7 @@ class Scheduler:
                 if not current_cpu_task:
                     continue
             if self.cpus_ready_time[i] != 0:
+                self.total_switch_time += 1
                 self.cpus_ready_time[i] -= 1
             else:
                 if self.current_resources[i] and self.current_resources[i].task != current_cpu_task:
@@ -66,10 +70,13 @@ class Scheduler:
                 else:
                     current_cpu_task.time_passed += 1
                     if current_cpu_task.is_done():
+                        self.tasks_done += 1
                         if current_cpu_task.is_periodical():
                             self.add_task(current_cpu_task.get_next())
                         self.current_tasks[i] = None
+                        print(current_cpu_task, self.task_list)
                         self.task_list.remove_task(current_cpu_task)
+                        top_tasks.remove(current_cpu_task)
                         self.current_resources[i] = None
         self.current_time += 1
         return all([not task or task.deadline > self.current_time for task in self.current_tasks])
