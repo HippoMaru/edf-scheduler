@@ -4,6 +4,7 @@ from task_list import *
 
 class Scheduler:
     def __init__(self, task_list=TaskList(), switch_time=0, resource_touch_time=0, cpus=1):
+        self.extra_times = []
         self.switch_time = switch_time
         self.tasks_done = 0
         self.total_switch_time = 0
@@ -15,6 +16,7 @@ class Scheduler:
         self.current_tasks = [None] * cpus
         cur = task_list.head
         self.current_resources = [None] * cpus
+        self.total_resource_touch_time = 0
         i = 0
         while not self.current_tasks[-1]:
             if not cur:
@@ -67,9 +69,11 @@ class Scheduler:
                     self.current_resources[i].task = current_cpu_task
                 if self.current_resources[i] and self.current_resources[i].ready_time != 0:
                     self.current_resources[i].ready_time -= 1
+                    self.total_resource_touch_time += 1
                 else:
                     current_cpu_task.time_passed += 1
                     if current_cpu_task.is_done():
+                        self.extra_times.append(self.current_time - current_cpu_task.first_arr_time - current_cpu_task.time_needed + 1)
                         self.tasks_done += 1
                         if current_cpu_task.is_periodical():
                             self.add_task(current_cpu_task.get_next())
